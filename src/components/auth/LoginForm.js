@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { BookOpen, Shield, User, ArrowRight, CheckCircle2 } from "lucide-react";
+import { BookOpen, Shield, User, ArrowRight, CheckCircle2, Sun, Moon } from "lucide-react";
 
 const SAMPLE_AUTHORS = [
   { id: "AUTH001", name: "Priya Sharma", email: "priya.sharma@email.com", note: "2 books, active royalty" },
@@ -25,6 +25,32 @@ export function LoginForm() {
   const [password, setPassword] = useState("password123");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [theme, setTheme] = useState("light");
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("bookleaf_theme");
+      if (saved === "dark" || saved === "light") {
+        setTheme(saved);
+        document.documentElement.setAttribute("data-theme", saved);
+      } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        setTheme("dark");
+        document.documentElement.setAttribute("data-theme", "dark");
+      } else {
+        const current = document.documentElement.getAttribute("data-theme") || "light";
+        setTheme(current);
+      }
+    } catch {}
+  }, []);
+
+  function toggleTheme() {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    try {
+      localStorage.setItem("bookleaf_theme", next);
+    } catch {}
+    document.documentElement.setAttribute("data-theme", next);
+  }
 
   function switchRole(newRole) {
     setRole(newRole);
@@ -81,9 +107,22 @@ export function LoginForm() {
   }
 
   return (
-    <div style={{ maxWidth: "480px", margin: "2.5rem auto", padding: "0 1rem" }}>
+    <div style={{ maxWidth: "480px", margin: "2.5rem auto", padding: "0 1rem", position: "relative" }}>
+      <div style={{ position: "absolute", top: "-1.5rem", right: "1rem" }}>
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="btn btn-outline btn-sm"
+          title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          aria-label="Toggle theme"
+          style={{ padding: "0.4rem 0.55rem" }}
+        >
+          {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+        </button>
+      </div>
+
       <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-        <div style={{ display: "inline-flex", padding: "12px", background: "#000", color: "#fff", borderRadius: "12px", marginBottom: "1rem" }}>
+        <div style={{ display: "inline-flex", padding: "12px", background: "var(--accent)", color: "var(--text-inverse)", borderRadius: "12px", marginBottom: "1rem" }}>
           <BookOpen size={28} />
         </div>
         <h1 style={{ fontSize: "1.75rem", fontWeight: 700, letterSpacing: "-0.03em" }}>
@@ -104,9 +143,9 @@ export function LoginForm() {
               padding: "0.75rem 0",
               background: "none",
               border: "none",
-              borderBottom: role === "author" ? "2px solid #000" : "2px solid transparent",
+              borderBottom: role === "author" ? "2px solid var(--accent)" : "2px solid transparent",
               fontWeight: role === "author" ? 600 : 500,
-              color: role === "author" ? "#000" : "var(--text-muted)",
+              color: role === "author" ? "var(--text-main)" : "var(--text-muted)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -126,9 +165,9 @@ export function LoginForm() {
               padding: "0.75rem 0",
               background: "none",
               border: "none",
-              borderBottom: role === "admin" ? "2px solid #000" : "2px solid transparent",
+              borderBottom: role === "admin" ? "2px solid var(--accent)" : "2px solid transparent",
               fontWeight: role === "admin" ? 600 : 500,
-              color: role === "admin" ? "#000" : "var(--text-muted)",
+              color: role === "admin" ? "var(--text-main)" : "var(--text-muted)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -142,7 +181,7 @@ export function LoginForm() {
         </div>
 
         {error && (
-          <div style={{ padding: "0.75rem", marginBottom: "1rem", borderRadius: "var(--radius)", background: "#fee2e2", border: "1px solid #f87171", color: "#991b1b", fontSize: "0.85rem" }}>
+          <div style={{ padding: "0.75rem", marginBottom: "1rem", borderRadius: "var(--radius)", background: "rgba(239, 68, 68, 0.12)", border: "1px solid var(--danger)", color: "var(--danger)", fontSize: "0.85rem" }}>
             {error}
           </div>
         )}
@@ -203,8 +242,9 @@ export function LoginForm() {
                     textAlign: "left",
                     padding: "0.5rem 0.75rem",
                     borderRadius: "var(--radius)",
-                    border: email === item.email ? "1px solid #000" : "1px solid var(--border)",
-                    background: email === item.email ? "var(--bg-subtle)" : "#fff",
+                    border: email === item.email ? "1px solid var(--accent)" : "1px solid var(--border)",
+                    background: email === item.email ? "var(--bg-subtle)" : "var(--card-bg)",
+                    color: "var(--text-main)",
                     cursor: "pointer",
                     fontSize: "0.8rem",
                     display: "flex",
@@ -219,7 +259,7 @@ export function LoginForm() {
                       {item.note}
                     </div>
                   </div>
-                  {email === item.email && <CheckCircle2 size={16} color="#000" />}
+                  {email === item.email && <CheckCircle2 size={16} color="var(--accent)" />}
                 </button>
               ))}
             </div>
@@ -234,8 +274,9 @@ export function LoginForm() {
                     textAlign: "left",
                     padding: "0.5rem 0.75rem",
                     borderRadius: "var(--radius)",
-                    border: email === item.email ? "1px solid #000" : "1px solid var(--border)",
-                    background: email === item.email ? "var(--bg-subtle)" : "#fff",
+                    border: email === item.email ? "1px solid var(--accent)" : "1px solid var(--border)",
+                    background: email === item.email ? "var(--bg-subtle)" : "var(--card-bg)",
+                    color: "var(--text-main)",
                     cursor: "pointer",
                     fontSize: "0.8rem",
                     display: "flex",
@@ -250,7 +291,7 @@ export function LoginForm() {
                       {item.role}
                     </div>
                   </div>
-                  {email === item.email && <CheckCircle2 size={16} color="#000" />}
+                  {email === item.email && <CheckCircle2 size={16} color="var(--accent)" />}
                 </button>
               ))}
             </div>
