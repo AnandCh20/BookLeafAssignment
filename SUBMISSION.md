@@ -2,8 +2,8 @@
 
 **Candidate Name:** Anand Chaurasia  
 **Email:** anandchaurasia99@gmail.com  
-**GitHub Profile / Repository:** [https://github.com/AnandCh20/BookLeafAssignment](https://github.com/AnandCh20/BookLeafAssignment)  
-**Deliverables:** Encrypted ZIP Archive (`bookleaf-submission-encrypted.zip`), Private GitHub Repository, and Live Demo  
+**GitHub Repository:** [https://github.com/AnandCh20/BookLeafAssignment](https://github.com/AnandCh20/BookLeafAssignment)  
+**Deliverables:** Source Code (GitHub Repository), Documentation, and Live Demo  
 
 ---
 
@@ -13,23 +13,17 @@ This submission delivers a complete full-stack **Author Support & Communication 
 - **Author Portal (`/author`):** Published titles catalog, royalty earnings/payout tracking (including edge cases like books in typesetting/cover design), support ticket submission with verification attachments, and real-time conversation updates without page refresh.
 - **Operations Admin Portal (`/admin`):** Centralized ticket queue with multi-filter sorting, urgent/critical badges, 24h+ overdue flags, AI auto-classification into 6 standard categories, AI priority scoring, Knowledge-Base-grounded AI draft response generation, private internal notes, and team ticket assignment.
 - **RESTful API & Interactive Docs (`/api-docs` & `/api/docs`):** Documented REST endpoints with JWT authentication and role-based access control, plus an OpenAPI 3.0 specification.
-- **Encrypted Archive:** `bookleaf-submission-encrypted.zip` (Password: `BookLeaf2026Secure!`).
+- **Source Code Repository:** [https://github.com/AnandCh20/BookLeafAssignment](https://github.com/AnandCh20/BookLeafAssignment)
 
 ---
 
 ## 2. Setup Instructions to Run the Project Locally
 
 ### Prerequisites
-- Node.js version 18.0 or higher
+- Node.js version 18.0 or higher (v20+ recommended)
 - npm (bundled with Node.js)
 
-### Step 1: Unzip or Clone
-If using the encrypted ZIP file:
-```bash
-unzip -P "BookLeaf2026Secure!" bookleaf-submission-encrypted.zip -d bookleaf-portal
-cd bookleaf-portal
-```
-Or if cloning from GitHub:
+### Step 1: Clone the Repository
 ```bash
 git clone https://github.com/AnandCh20/BookLeafAssignment.git
 cd BookLeafAssignment
