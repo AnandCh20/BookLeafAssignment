@@ -3,7 +3,7 @@
 **Candidate Name:** Anand Chaurasia  
 **Email:** anandchaurasia99@gmail.com  
 **GitHub Repository:** [https://github.com/AnandCh20/BookLeafAssignment](https://github.com/AnandCh20/BookLeafAssignment)  
-**Deliverables:** Source Code (GitHub Repository), Documentation, and Live Demo  
+**Deliverables:** Source Code (Public GitHub Repository), Documentation, and Live Demo  
 
 ---
 
