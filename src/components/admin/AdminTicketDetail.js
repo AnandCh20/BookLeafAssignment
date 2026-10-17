@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Send, Lock, UserCheck, RefreshCw, CheckCircle, AlertTriangle, Paperclip, Clock } from "lucide-react";
+import { Sparkles, Send, Lock, RefreshCw, CheckCircle, AlertTriangle, Paperclip, Clock, Maximize2, Minimize2, X } from "lucide-react";
 import { PriorityBadge, StatusBadge, CategoryBadge } from "@/components/common/Badge";
 
 const CATEGORIES = [
@@ -17,7 +17,7 @@ const PRIORITIES = ["Critical", "High", "Medium", "Low"];
 const STATUSES = ["Open", "In Progress", "Resolved", "Closed"];
 const ASSIGNEES = ["Aakash Mehta", "Rhea Sen", "Operations Desk", "Production Lead"];
 
-export function AdminTicketDetail({ ticket, currentAdmin, onTicketUpdated, onCloseDetail }) {
+export function AdminTicketDetail({ ticket, currentAdmin, onTicketUpdated, onCloseDetail, isExpanded, onToggleExpand }) {
   const [activeTab, setActiveTab] = useState("response");
   const [draftResponse, setDraftResponse] = useState(ticket.ai_draft || "");
   const [generatingDraft, setGeneratingDraft] = useState(false);
@@ -119,9 +119,9 @@ export function AdminTicketDetail({ ticket, currentAdmin, onTicketUpdated, onClo
   const isOldUnresolved = (ticket.status === "Open" || ticket.status === "In Progress") && hoursOpen >= 24;
 
   return (
-    <div className="card" style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.5rem" }}>
-        <div>
+    <div className="card" style={{ display: "flex", flexDirection: "column", gap: "1.25rem", minWidth: 0, width: "100%" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.75rem" }}>
+        <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
             <span style={{ fontWeight: 700, fontSize: "0.9rem" }}>{ticket.ticket_id}</span>
             <CategoryBadge category={ticket.category} />
@@ -135,7 +135,7 @@ export function AdminTicketDetail({ ticket, currentAdmin, onTicketUpdated, onClo
             )}
           </div>
 
-          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: "0.4rem" }}>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginTop: "0.4rem", wordBreak: "break-word" }}>
             {ticket.subject}
           </h2>
 
@@ -144,23 +144,36 @@ export function AdminTicketDetail({ ticket, currentAdmin, onTicketUpdated, onClo
           </div>
         </div>
 
-        {onCloseDetail && (
-          <button onClick={onCloseDetail} className="btn btn-outline btn-sm">
-            Close Panel
-          </button>
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+          {onToggleExpand && (
+            <button
+              onClick={onToggleExpand}
+              className="btn btn-outline btn-sm"
+              title={isExpanded ? "Restore side-by-side view" : "Expand workbench full width"}
+            >
+              {isExpanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+              <span>{isExpanded ? "Split View" : "Full Width"}</span>
+            </button>
+          )}
+
+          {onCloseDetail && (
+            <button onClick={onCloseDetail} className="btn btn-outline btn-sm" title="Close Panel">
+              <X size={13} />
+            </button>
+          )}
+        </div>
       </div>
 
-      <div style={{ padding: "0.85rem 1rem", background: "var(--bg-secondary)", border: "1px solid var(--border)", borderRadius: "var(--radius)", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0.75rem" }}>
+      <div style={{ padding: "0.85rem", background: "var(--bg-secondary)", border: "1px solid var(--border)", borderRadius: "var(--radius)", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "0.6rem" }}>
         <div>
-          <label style={{ fontSize: "0.725rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase" }}>
-            AI Category Override
+          <label style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase" }}>
+            Category Override
           </label>
           <select
             className="form-select"
             value={ticket.category}
             onChange={(e) => handleUpdateField("category", e.target.value)}
-            style={{ fontSize: "0.8rem", padding: "0.35rem 0.5rem", marginTop: "0.2rem" }}
+            style={{ fontSize: "0.775rem", padding: "0.35rem 0.5rem", marginTop: "0.2rem" }}
           >
             {CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>
@@ -171,14 +184,14 @@ export function AdminTicketDetail({ ticket, currentAdmin, onTicketUpdated, onClo
         </div>
 
         <div>
-          <label style={{ fontSize: "0.725rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase" }}>
-            AI Priority Override
+          <label style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase" }}>
+            Priority Override
           </label>
           <select
             className="form-select"
             value={ticket.priority}
             onChange={(e) => handleUpdateField("priority", e.target.value)}
-            style={{ fontSize: "0.8rem", padding: "0.35rem 0.5rem", marginTop: "0.2rem" }}
+            style={{ fontSize: "0.775rem", padding: "0.35rem 0.5rem", marginTop: "0.2rem" }}
           >
             {PRIORITIES.map((pri) => (
               <option key={pri} value={pri}>
@@ -189,14 +202,14 @@ export function AdminTicketDetail({ ticket, currentAdmin, onTicketUpdated, onClo
         </div>
 
         <div>
-          <label style={{ fontSize: "0.725rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase" }}>
+          <label style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase" }}>
             Ticket Status
           </label>
           <select
             className="form-select"
             value={ticket.status}
             onChange={(e) => handleUpdateField("status", e.target.value)}
-            style={{ fontSize: "0.8rem", padding: "0.35rem 0.5rem", marginTop: "0.2rem" }}
+            style={{ fontSize: "0.775rem", padding: "0.35rem 0.5rem", marginTop: "0.2rem" }}
           >
             {STATUSES.map((st) => (
               <option key={st} value={st}>
@@ -207,14 +220,14 @@ export function AdminTicketDetail({ ticket, currentAdmin, onTicketUpdated, onClo
         </div>
 
         <div>
-          <label style={{ fontSize: "0.725rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase" }}>
+          <label style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase" }}>
             Assigned Owner
           </label>
           <select
             className="form-select"
             value={ticket.assigned_to || ""}
             onChange={(e) => handleUpdateField("assigned_to", e.target.value || null)}
-            style={{ fontSize: "0.8rem", padding: "0.35rem 0.5rem", marginTop: "0.2rem" }}
+            style={{ fontSize: "0.775rem", padding: "0.35rem 0.5rem", marginTop: "0.2rem" }}
           >
             <option value="">Unassigned</option>
             {ASSIGNEES.map((person) => (
@@ -241,7 +254,7 @@ export function AdminTicketDetail({ ticket, currentAdmin, onTicketUpdated, onClo
         </div>
 
         {ticket.attachments && ticket.attachments.length > 0 && (
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.75rem", paddingTop: "0.5rem", borderTop: "1px solid var(--border)", fontSize: "0.8rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.75rem", paddingTop: "0.5rem", borderTop: "1px solid var(--border)", fontSize: "0.8rem", flexWrap: "wrap" }}>
             <Paperclip size={14} />
             <span style={{ fontWeight: 600 }}>Attachments:</span>
             {ticket.attachments.map((att, idx) => (
@@ -253,7 +266,7 @@ export function AdminTicketDetail({ ticket, currentAdmin, onTicketUpdated, onClo
         )}
       </div>
 
-      <div style={{ borderBottom: "1px solid var(--border)", display: "flex", gap: "1rem" }}>
+      <div style={{ borderBottom: "1px solid var(--border)", display: "flex", gap: "1rem", overflowX: "auto" }}>
         <button
           onClick={() => setActiveTab("response")}
           className={`tab-btn ${activeTab === "response" ? "active" : ""}`}
@@ -281,11 +294,9 @@ export function AdminTicketDetail({ ticket, currentAdmin, onTicketUpdated, onClo
       {activeTab === "response" && (
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem", flexWrap: "wrap", gap: "0.5rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>
-                AI-Drafted Response (BookLeaf Knowledge Base Powered)
-              </span>
-            </div>
+            <span style={{ fontSize: "0.825rem", fontWeight: 600 }}>
+              AI Draft (BookLeaf Knowledge Base Grounded)
+            </span>
 
             <button
               onClick={handleGenerateAIDraft}
@@ -294,7 +305,7 @@ export function AdminTicketDetail({ ticket, currentAdmin, onTicketUpdated, onClo
               style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
             >
               <RefreshCw size={13} className={generatingDraft ? "spin" : ""} />
-              <span>{generatingDraft ? "Generating Draft..." : "Regenerate AI Draft"}</span>
+              <span>{generatingDraft ? "Generating..." : "Regenerate AI Draft"}</span>
             </button>
           </div>
 
@@ -302,22 +313,22 @@ export function AdminTicketDetail({ ticket, currentAdmin, onTicketUpdated, onClo
             <div className="form-group">
               <textarea
                 className="form-textarea"
-                rows={10}
+                rows={9}
                 value={draftResponse}
                 onChange={(e) => setDraftResponse(e.target.value)}
                 placeholder="Click Regenerate AI Draft to populate from BookLeaf knowledge base, or compose manually..."
-                style={{ fontSize: "0.875rem", lineHeight: 1.5 }}
+                style={{ fontSize: "0.85rem", lineHeight: 1.5 }}
               />
             </div>
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem", marginTop: "0.75rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <label style={{ fontSize: "0.8rem", fontWeight: 500 }}>Update Status Upon Sending:</label>
+                <label style={{ fontSize: "0.775rem", fontWeight: 500 }}>Status Upon Sending:</label>
                 <select
                   className="form-select"
                   value={responseStatus}
                   onChange={(e) => setResponseStatus(e.target.value)}
-                  style={{ width: "auto", fontSize: "0.8rem", padding: "0.3rem 0.6rem" }}
+                  style={{ width: "auto", fontSize: "0.775rem", padding: "0.3rem 0.5rem" }}
                 >
                   <option value="Resolved">Resolved</option>
                   <option value="In Progress">In Progress</option>
@@ -327,10 +338,10 @@ export function AdminTicketDetail({ ticket, currentAdmin, onTicketUpdated, onClo
 
               <button
                 type="submit"
-                className="btn btn-primary"
+                className="btn btn-primary btn-sm"
                 disabled={sendingResponse || !draftResponse.trim()}
               >
-                <Send size={15} />
+                <Send size={14} />
                 <span>{sendingResponse ? "Delivering..." : "Approve & Send to Author"}</span>
               </button>
             </div>
@@ -350,13 +361,13 @@ export function AdminTicketDetail({ ticket, currentAdmin, onTicketUpdated, onClo
                 border: "1px solid var(--border)"
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.4rem", fontSize: "0.8rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.4rem", fontSize: "0.8rem", flexWrap: "wrap", gap: "0.25rem" }}>
                 <span style={{ fontWeight: 600 }}>
                   {m.sender_name} ({m.sender_type === "admin" ? "BookLeaf Operations" : "Author"})
                 </span>
-                <span style={{ color: "var(--text-muted)" }}>{new Date(m.created_at).toLocaleString()}</span>
+                <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>{new Date(m.created_at).toLocaleString()}</span>
               </div>
-              <div style={{ fontSize: "0.875rem", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
+              <div style={{ fontSize: "0.85rem", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
                 {m.content}
               </div>
             </div>

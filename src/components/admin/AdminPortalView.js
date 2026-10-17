@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Header } from "@/components/common/Header";
 import { TicketQueue } from "./TicketQueue";
 import { AdminTicketDetail } from "./AdminTicketDetail";
-import { ShieldCheck, RotateCcw, AlertTriangle, CheckCircle, Clock, Inbox } from "lucide-react";
+import { ShieldCheck, RotateCcw, AlertTriangle, CheckCircle, Clock, Inbox, Columns, List, Layout } from "lucide-react";
 
 export function AdminPortalView({ initialAdmin }) {
   const [currentAdmin, setCurrentAdmin] = useState(initialAdmin);
@@ -13,6 +13,7 @@ export function AdminPortalView({ initialAdmin }) {
   const [loading, setLoading] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [resetMessage, setResetMessage] = useState("");
+  const [viewMode, setViewMode] = useState("split");
 
   const [filters, setFilters] = useState({
     status: "All",
@@ -56,6 +57,13 @@ export function AdminPortalView({ initialAdmin }) {
     setFilters((prev) => ({ ...prev, [key]: value }));
   }
 
+  function handleSelectTicket(ticket) {
+    setSelectedTicketId(ticket.ticket_id);
+    if (viewMode === "queue") {
+      setViewMode("split");
+    }
+  }
+
   async function handleResetDatabase() {
     if (!confirm("Reset database to the initial 10 authors, 18 books, and initial tickets?")) {
       return;
@@ -86,7 +94,7 @@ export function AdminPortalView({ initialAdmin }) {
     <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-secondary)" }}>
       <Header user={currentAdmin} currentPortal="admin" />
 
-      <main className="container" style={{ padding: "1.5rem 1.25rem 3rem" }}>
+      <main className="container-fluid" style={{ padding: "1.5rem 1.25rem 3rem" }}>
         <div className="card" style={{ marginBottom: "1.5rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
             <div>
@@ -101,7 +109,43 @@ export function AdminPortalView({ initialAdmin }) {
               </p>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+              <div style={{ display: "inline-flex", background: "var(--bg-subtle)", padding: "3px", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("split")}
+                  className={`btn btn-sm ${viewMode === "split" ? "btn-primary" : "btn-outline"}`}
+                  style={{ border: "none", padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                  title="Side-by-side queue and workbench"
+                >
+                  <Columns size={12} />
+                  <span>Split</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setViewMode("queue")}
+                  className={`btn btn-sm ${viewMode === "queue" ? "btn-primary" : "btn-outline"}`}
+                  style={{ border: "none", padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                  title="Full width queue list"
+                >
+                  <List size={12} />
+                  <span>Queue Only</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setViewMode("detail")}
+                  className={`btn btn-sm ${viewMode === "detail" ? "btn-primary" : "btn-outline"}`}
+                  style={{ border: "none", padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                  title="Full width response workbench"
+                  disabled={!selectedTicket}
+                >
+                  <Layout size={12} />
+                  <span>Workbench</span>
+                </button>
+              </div>
+
               <button
                 onClick={handleResetDatabase}
                 className="btn btn-outline btn-sm"
@@ -110,7 +154,7 @@ export function AdminPortalView({ initialAdmin }) {
                 style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
               >
                 <RotateCcw size={13} />
-                <span>{resetting ? "Resetting..." : "Reset Sample DB"}</span>
+                <span>{resetting ? "Resetting..." : "Reset DB"}</span>
               </button>
             </div>
           </div>
@@ -151,20 +195,73 @@ export function AdminPortalView({ initialAdmin }) {
           </div>
         </div>
 
-        <div className="split-layout">
-          <div>
+        {viewMode === "split" && (
+          <div className="split-layout">
+            <div style={{ minWidth: 0 }}>
+              <TicketQueue
+                tickets={tickets}
+                selectedTicketId={selectedTicketId}
+                onSelectTicket={handleSelectTicket}
+                onRefresh={fetchTickets}
+                loading={loading}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+              />
+            </div>
+
+            <div style={{ minWidth: 0 }}>
+              {selectedTicket ? (
+                <AdminTicketDetail
+                  ticket={selectedTicket}
+                  currentAdmin={currentAdmin}
+                  onTicketUpdated={(updated) => {
+                    setTickets((prev) =>
+                      prev.map((t) => (t.ticket_id === updated.ticket_id ? updated : t))
+                    );
+                  }}
+                  onCloseDetail={() => setSelectedTicketId(null)}
+                  isExpanded={false}
+                  onToggleExpand={() => setViewMode("detail")}
+                />
+              ) : (
+                <div className="card" style={{ textAlign: "center", padding: "4rem 2rem", color: "var(--text-muted)" }}>
+                  <Inbox size={48} style={{ margin: "0 auto 1rem" }} />
+                  <h3 style={{ fontSize: "1.1rem", fontWeight: 600 }}>No Ticket Selected</h3>
+                  <p style={{ fontSize: "0.875rem", marginTop: "0.25rem" }}>
+                    Select an author ticket from the queue to view details and launch the AI response desk.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {viewMode === "queue" && (
+          <div style={{ width: "100%" }}>
             <TicketQueue
               tickets={tickets}
               selectedTicketId={selectedTicketId}
-              onSelectTicket={(t) => setSelectedTicketId(t.ticket_id)}
+              onSelectTicket={handleSelectTicket}
               onRefresh={fetchTickets}
               loading={loading}
               filters={filters}
               onFilterChange={handleFilterChange}
             />
           </div>
+        )}
 
-          <div>
+        {viewMode === "detail" && (
+          <div style={{ width: "100%", maxWidth: "1000px", margin: "0 auto" }}>
+            <div style={{ marginBottom: "1rem" }}>
+              <button
+                type="button"
+                onClick={() => setViewMode("split")}
+                className="btn btn-outline btn-sm"
+              >
+                ← Back to Ticket Queue
+              </button>
+            </div>
+
             {selectedTicket ? (
               <AdminTicketDetail
                 ticket={selectedTicket}
@@ -174,19 +271,17 @@ export function AdminPortalView({ initialAdmin }) {
                     prev.map((t) => (t.ticket_id === updated.ticket_id ? updated : t))
                   );
                 }}
-                onCloseDetail={() => setSelectedTicketId(null)}
+                onCloseDetail={() => setViewMode("split")}
+                isExpanded={true}
+                onToggleExpand={() => setViewMode("split")}
               />
             ) : (
-              <div className="card" style={{ textAlign: "center", padding: "4rem 2rem", color: "var(--text-muted)" }}>
-                <Inbox size={48} style={{ margin: "0 auto 1rem" }} />
-                <h3 style={{ fontSize: "1.1rem", fontWeight: 600 }}>No Ticket Selected</h3>
-                <p style={{ fontSize: "0.875rem", marginTop: "0.25rem" }}>
-                  Select an author ticket from the queue to view details and launch the AI response desk.
-                </p>
+              <div className="card" style={{ textAlign: "center", padding: "3rem" }}>
+                No ticket selected.
               </div>
             )}
           </div>
-        </div>
+        )}
       </main>
     </div>
   );
