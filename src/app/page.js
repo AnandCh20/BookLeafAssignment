@@ -1,33 +1,15 @@
 import Link from "next/link";
-import { BookOpen, User, Shield, ArrowRight, Sparkles, Zap, ShieldCheck, Database } from "lucide-react";
+import { BookOpen, User, Shield, ArrowRight, Sparkles, Zap, ShieldCheck } from "lucide-react";
+import { Header } from "@/components/common/Header";
 
 export default function HomePage() {
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-secondary)", display: "flex", flexDirection: "column" }}>
-      <header className="navbar">
-        <div className="container navbar-content">
-          <div className="brand">
-            <span style={{ display: "inline-flex", padding: "6px", background: "#000", color: "#fff", borderRadius: "6px" }}>
-              <BookOpen size={18} />
-            </span>
-            <span>BookLeaf</span>
-            <span className="brand-badge">Publishing</span>
-          </div>
-
-          <div style={{ display: "flex", gap: "0.75rem" }}>
-            <Link href="/api-docs" className="btn btn-outline btn-sm">
-              API Specs
-            </Link>
-            <Link href="/login" className="btn btn-primary btn-sm">
-              Sign In
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header currentPortal="landing" />
 
       <main className="container" style={{ flex: 1, padding: "4rem 1.25rem 5rem", maxWidth: "980px" }}>
         <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.3rem 0.75rem", borderRadius: "9999px", background: "#000", color: "#fff", fontSize: "0.775rem", fontWeight: 600, marginBottom: "1.25rem" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.3rem 0.75rem", borderRadius: "9999px", background: "var(--accent)", color: "var(--text-inverse)", fontSize: "0.775rem", fontWeight: 600, marginBottom: "1.25rem" }}>
             <Sparkles size={13} />
             <span>AI-Assisted Operations & Support Portal</span>
           </div>
@@ -56,42 +38,42 @@ export default function HomePage() {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem", marginBottom: "3.5rem" }}>
           <div className="card" style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "#000", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "var(--accent)", color: "var(--text-inverse)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <User size={18} />
             </div>
             <h3 style={{ fontSize: "1.15rem", fontWeight: 700 }}>Author Dashboard</h3>
             <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", lineHeight: 1.5 }}>
               Check published books, ISBN status, quarterly 80/20 royalty reports, pending payouts, and raise support queries with instant AI triage.
             </p>
-            <Link href="/author" style={{ marginTop: "auto", fontSize: "0.825rem", fontWeight: 600, color: "#000", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+            <Link href="/author" style={{ marginTop: "auto", fontSize: "0.825rem", fontWeight: 600, color: "var(--text-main)", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
               <span>Launch Author Workspace</span>
               <ArrowRight size={13} />
             </Link>
           </div>
 
           <div className="card" style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "#27272a", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "var(--border-strong)", color: "var(--text-main)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <ShieldCheck size={18} />
             </div>
             <h3 style={{ fontSize: "1.15rem", fontWeight: 700 }}>Operations Queue</h3>
             <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", lineHeight: 1.5 }}>
               Prioritized ticket triage across all authors. Auto-classification, urgency scoring, internal private notes, and Knowledge-Base grounded drafts.
             </p>
-            <Link href="/admin" style={{ marginTop: "auto", fontSize: "0.825rem", fontWeight: 600, color: "#000", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+            <Link href="/admin" style={{ marginTop: "auto", fontSize: "0.825rem", fontWeight: 600, color: "var(--text-main)", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
               <span>Launch Operations Queue</span>
               <ArrowRight size={13} />
             </Link>
           </div>
 
           <div className="card" style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "#52525b", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "var(--bg-subtle)", border: "1px solid var(--border)", color: "var(--text-main)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Zap size={18} />
             </div>
             <h3 style={{ fontSize: "1.15rem", fontWeight: 700 }}>Real-Time & AI Core</h3>
             <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", lineHeight: 1.5 }}>
               Real-time message updates without page refreshes. Graceful LLM degradation ensures uninterrupted operations even when APIs rate-limit.
             </p>
-            <Link href="/api-docs" style={{ marginTop: "auto", fontSize: "0.825rem", fontWeight: 600, color: "#000", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+            <Link href="/api-docs" style={{ marginTop: "auto", fontSize: "0.825rem", fontWeight: 600, color: "var(--text-main)", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
               <span>Explore REST Architecture</span>
               <ArrowRight size={13} />
             </Link>

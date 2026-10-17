@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { BookOpen, LogOut, FileText, ArrowRightLeft, Sun, Moon, Menu, X, User } from "lucide-react";
+import { BookOpen, LogOut, FileText, ArrowRightLeft, Sun, Moon, Menu, X, User, Shield, LogIn } from "lucide-react";
 
 export function Header({ user, currentPortal }) {
   const router = useRouter();
@@ -52,10 +52,14 @@ export function Header({ user, currentPortal }) {
     }
   }
 
+  const isLanding = currentPortal === "landing";
+
   const portalLabel = currentPortal === "admin" 
     ? "Operations Desk" 
     : currentPortal === "docs" 
     ? "API Reference" 
+    : currentPortal === "landing"
+    ? "Publishing Hub"
     : "Author Support";
 
   const switchLabel = currentPortal === "author" 
@@ -98,15 +102,48 @@ export function Header({ user, currentPortal }) {
             <span>API Docs</span>
           </button>
 
-          <button
-            onClick={handleSwitchPortal}
-            className="btn btn-secondary btn-sm"
-            style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
-            title={switchLabel}
-          >
-            <ArrowRightLeft size={14} />
-            <span>{switchLabel}</span>
-          </button>
+          {isLanding ? (
+            <>
+              <button
+                onClick={() => router.push("/author")}
+                className="btn btn-secondary btn-sm"
+                style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
+              >
+                <User size={14} />
+                <span>Author Portal</span>
+              </button>
+
+              <button
+                onClick={() => router.push("/admin")}
+                className="btn btn-secondary btn-sm"
+                style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
+              >
+                <Shield size={14} />
+                <span>Operations Desk</span>
+              </button>
+
+              {!user && (
+                <button
+                  onClick={() => router.push("/login")}
+                  className="btn btn-primary btn-sm"
+                  style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
+                >
+                  <LogIn size={14} />
+                  <span>Sign In</span>
+                </button>
+              )}
+            </>
+          ) : (
+            <button
+              onClick={handleSwitchPortal}
+              className="btn btn-secondary btn-sm"
+              style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
+              title={switchLabel}
+            >
+              <ArrowRightLeft size={14} />
+              <span>{switchLabel}</span>
+            </button>
+          )}
 
           {user && (
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", fontSize: "0.85rem" }}>
@@ -171,14 +208,56 @@ export function Header({ user, currentPortal }) {
           )}
 
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            <button
-              onClick={handleSwitchPortal}
-              className="btn btn-primary btn-sm"
-              style={{ width: "100%", justifyContent: "center", padding: "0.65rem 1rem", fontSize: "0.85rem" }}
-            >
-              <ArrowRightLeft size={15} />
-              <span>{switchLabel}</span>
-            </button>
+            {isLanding ? (
+              <>
+                <button
+                  onClick={() => {
+                    setMobileOpen(false);
+                    router.push("/author");
+                  }}
+                  className="btn btn-primary btn-sm"
+                  style={{ width: "100%", justifyContent: "center", padding: "0.65rem 1rem", fontSize: "0.85rem" }}
+                >
+                  <User size={15} />
+                  <span>Enter Author Portal</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setMobileOpen(false);
+                    router.push("/admin");
+                  }}
+                  className="btn btn-secondary btn-sm"
+                  style={{ width: "100%", justifyContent: "center", padding: "0.65rem 1rem", fontSize: "0.85rem" }}
+                >
+                  <Shield size={15} />
+                  <span>Enter Operations Desk</span>
+                </button>
+
+                {!user && (
+                  <button
+                    onClick={() => {
+                      setMobileOpen(false);
+                      router.push("/login");
+                    }}
+                    className="btn btn-outline btn-sm"
+                    style={{ width: "100%", justifyContent: "center", padding: "0.65rem 1rem", fontSize: "0.85rem" }}
+                  >
+                    <LogIn size={15} />
+                    <span>Sign In to Portal</span>
+                  </button>
+                )}
+              </>
+            ) : (
+              <button
+                onClick={handleSwitchPortal}
+                className="btn btn-primary btn-sm"
+                style={{ width: "100%", justifyContent: "center", padding: "0.65rem 1rem", fontSize: "0.85rem" }}
+              >
+                <ArrowRightLeft size={15} />
+                <span>{switchLabel}</span>
+              </button>
+            )}
 
             <button
               onClick={() => {
