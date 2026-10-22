@@ -1,0 +1,322 @@
+{
+  "name": "BookLeaf - Royalty Summary Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bookleaf-royalty-summary",
+        "options": {}
+      },
+      "id": "node-webhook-trigger",
+      "name": "Bubble Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        180,
+        300
+      ],
+      "webhookId": "bookleaf-royalty-summary-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\n\nconst authorId = body.author_id || body.authorId;\nif (!authorId) {\n  throw new Error('Missing required field: author_id');\n}\n\nconst requestId = body.request_id || `${authorId}-${Date.now()}`;\nconst triggeredBy = body.triggered_by || 'admin';\nconst triggerSource = body.trigger_source || 'manual';\n\nconst authorData = body.author_data || (body.books ? body : null);\nconst hasFullPayload = Boolean(authorData && Array.isArray(authorData.books) && authorData.books.length > 0);\n\nreturn [{\n  json: {\n    author_id: authorId,\n    request_id: requestId,\n    triggered_by: triggeredBy,\n    trigger_source: triggerSource,\n    has_full_payload: hasFullPayload,\n    author_data: authorData || {},\n    received_at: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "node-validate-input",
+      "name": "Validate & Normalize Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cond-has-payload",
+              "leftValue": "={{ $json.has_full_payload }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-check-payload",
+      "name": "Has Full Payload?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        620,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.BUBBLE_API_URL || 'https://bookleaf-app.bubbleapps.io/version-test/api/1.1/obj' }}/Author/{{ $json.author_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "node-fetch-bubble-data",
+      "name": "Fetch from Bubble Data API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        840,
+        420
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "cred-bubble-api-key",
+          "name": "Bubble Data API Key"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nlet author = item.author_data || item.response || item;\n\nconst books = author.books || [];\nlet totalEarned = 0;\nlet totalPaid = 0;\nlet totalPending = 0;\nlet publishedCount = 0;\nlet inProductionCount = 0;\n\nconst booksSummary = books.map(b => {\n  const earned = Number(b.total_royalty_earned || b.royalty_earned || 0);\n  const paid = Number(b.royalty_paid || 0);\n  const pending = Number(b.royalty_pending || (earned - paid));\n  \n  totalEarned += earned;\n  totalPaid += paid;\n  totalPending += pending;\n  \n  if (b.status === 'Published & Live') {\n    publishedCount++;\n  } else {\n    inProductionCount++;\n  }\n  \n  return {\n    book_id: b.book_id || 'BK',\n    title: b.title,\n    isbn: b.isbn || 'Pending',\n    status: b.status,\n    copies_sold: b.total_copies_sold || b.copies_sold || 0,\n    royalty_earned: earned,\n    royalty_paid: paid,\n    royalty_pending: pending,\n    last_payout: b.last_royalty_payout_date || 'None',\n    available_on: Array.isArray(b.available_on) ? b.available_on.join(', ') : (b.available_on || 'Not yet live')\n  };\n});\n\nreturn [{\n  json: {\n    author_id: item.author_id || author.author_id,\n    request_id: item.request_id || `${item.author_id}-${Date.now()}`,\n    name: author.name || author.author_name || 'Author',\n    email: author.email || 'author@bookleaf.com',\n    city: author.city || 'India',\n    total_books: books.length,\n    published_count: publishedCount,\n    in_production_count: inProductionCount,\n    total_royalty_earned: totalEarned,\n    total_royalty_paid: totalPaid,\n    total_royalty_pending: totalPending,\n    books_summary: booksSummary,\n    has_pending_royalty: totalPending > 0,\n    has_in_production: inProductionCount > 0\n  }\n}];"
+      },
+      "id": "node-aggregate-data",
+      "name": "Aggregate Author & Book Figures",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1080,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + ($env.OPENAI_API_KEY || 'YOUR_OPENAI_API_KEY') }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are BookLeaf Publishing's Author Relations Specialist. Warm, empathetic tone. Policies: 80/20 profit split, quarterly payments within 45 days, \u20b91,000 threshold. Delhi in-house printing. Structure: Greeting with name, individual book breakdown, financial summary (Earned, Paid, Pending), upcoming payout expectations, production status for unpublished books, warm sign-off.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Generate royalty summary email for author {{ $json.name }} ({{ $json.email }}). City: {{ $json.city }}. Total Earned: \u20b9{{ $json.total_royalty_earned }}, Total Paid: \u20b9{{ $json.total_royalty_paid }}, Total Pending: \u20b9{{ $json.total_royalty_pending }}. Books: {{ JSON.stringify($json.books_summary) }}\"\n    }\n  ],\n  \"temperature\": 0.3\n}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "node-ai-generate-summary",
+      "name": "OpenAI - Generate Royalty Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        300
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-ai-success",
+              "leftValue": "={{ $json.message?.content || $json.text || $json.choices?.[0]?.message?.content }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-verify-ai-output",
+      "name": "AI Output Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BUBBLE_API_URL || 'https://bookleaf-app.bubbleapps.io/version-test/api/1.1/wf' }}/royalty-notification-callback",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"author_id\": \"{{ $('Aggregate Author & Book Figures').item.json.author_id }}\",\n  \"request_id\": \"{{ $('Aggregate Author & Book Figures').item.json.request_id }}\",\n  \"status\": \"Success\",\n  \"recipient_email\": \"{{ $('Aggregate Author & Book Figures').item.json.email }}\",\n  \"email_subject\": \"Your BookLeaf Royalty Summary & Account Statement\",\n  \"email_body\": {{ JSON.stringify($json.message?.content || $json.choices?.[0]?.message?.content) }},\n  \"processed_at\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "node-callback-bubble-success",
+      "name": "Log Success in Bubble",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1780,
+        200
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "cred-bubble-api-key",
+          "name": "Bubble Data API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BUBBLE_API_URL || 'https://bookleaf-app.bubbleapps.io/version-test/api/1.1/wf' }}/royalty-notification-callback",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"author_id\": \"{{ $('Aggregate Author & Book Figures').item.json.author_id || $('Validate & Normalize Input').item.json.author_id }}\",\n  \"request_id\": \"{{ $('Aggregate Author & Book Figures').item.json.request_id || $('Validate & Normalize Input').item.json.request_id }}\",\n  \"status\": \"Failed\",\n  \"error_message\": \"AI Generation or Data Fetch Failed\",\n  \"processed_at\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "node-callback-bubble-failure",
+      "name": "Log Failure in Bubble",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1780,
+        420
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "cred-bubble-api-key",
+          "name": "Bubble Data API Key"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Bubble Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate & Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Has Full Payload?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Full Payload?": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Author & Book Figures",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch from Bubble Data API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch from Bubble Data API": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Author & Book Figures",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Author & Book Figures": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - Generate Royalty Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI - Generate Royalty Email": {
+      "main": [
+        [
+          {
+            "node": "AI Output Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Output Valid?": {
+      "main": [
+        [
+          {
+            "node": "Log Success in Bubble",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Failure in Bubble",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

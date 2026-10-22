@@ -84,3 +84,23 @@ The application comes pre-loaded with the entire sample dataset (10 authors, 18 
 - **Zero Comments:** All code strictly omits inline and block comments per project guidelines.
 - **Server Component Boundary:** App Router page routes (`src/app/**/page.js`) are pure Server Components; interactive UI logic is cleanly encapsulated in Client Components under `src/components/`.
 - **Monochrome Theme:** Implemented in Vanilla CSS with high-contrast black and white styling, responsive across mobile, tablet, and desktop viewports.
+
+---
+
+## 5. Technical Assignment 2: Royalty Automation & No-Code System
+
+In addition to the custom full-stack application (Assignment 1), the repository includes the complete deliverables for **Assignment 2 (Author Royalty Dashboard & Automated Notification System)**:
+
+### Deliverables Manifest
+1. **n8n Automation Workflow Export:**
+   - [`assignment-2/n8n_royalty_summary_workflow.json`](file:///Users/karishma_sharma/Development/Assignment/assignment-2/n8n_royalty_summary_workflow.json) (Production 9-node workflow with webhook triggers, data aggregation, GPT prompt, error handling, and callbacks).
+2. **Relational Database Seed Datasets (CSV):**
+   - [`assignment-2/data/authors.csv`](file:///Users/karishma_sharma/Development/Assignment/assignment-2/data/authors.csv) (10 normalized author records ready for 1-click Bubble.io import).
+   - [`assignment-2/data/books.csv`](file:///Users/karishma_sharma/Development/Assignment/assignment-2/data/books.csv) (18 book catalog records with foreign keys and financial metrics).
+3. **Automated Test Suite & Output Samples:**
+   - [`assignment-2/test_n8n_simulation.py`](file:///Users/karishma_sharma/Development/Assignment/assignment-2/test_n8n_simulation.py) (Automated test runner verified against all 10 authors).
+   - [`assignment-2/simulated_output_samples.json`](file:///Users/karishma_sharma/Development/Assignment/assignment-2/simulated_output_samples.json) (Pre-generated sample email statements).
+4. **Comprehensive Architecture Blueprint & PDF Report:**
+   - Markdown: [`ASSIGNMENT-2-DOCUMENTATION.md`](file:///Users/karishma_sharma/Development/Assignment/ASSIGNMENT-2-DOCUMENTATION.md)
+   - Formal PDF Deliverable: [`ASSIGNMENT-2-DOCUMENTATION.pdf`](file:///Users/karishma_sharma/Development/Assignment/ASSIGNMENT-2-DOCUMENTATION.pdf) (Includes Bubble schema, privacy rules, status badge conditionals, and security specs).
+
